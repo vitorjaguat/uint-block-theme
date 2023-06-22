@@ -3,6 +3,12 @@ import { InnerBlocks } from '@wordpress/block-editor';
 
 wp.blocks.registerBlockType('ourblocktheme/banner', {
   title: 'Banner',
+  supports: {
+    align: ['full'],
+  }, //in editor, will show this block in full width, even if in theme.json settings/layout/contentSize is limited to an fixed number of pixels
+  attributes: {
+    align: { type: 'string', default: 'full' },
+  },
   edit: EditComponent,
   save: SaveComponent,
 });
