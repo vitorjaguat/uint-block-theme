@@ -218,21 +218,60 @@ add_filter('ai1wm_exclude_themes_from_export', function ($exclude_filters) {
 
 //   add_action('init', 'bannerBlock');
 
-  class JSXBlock {
-    function __construct($name) {
-        $this->name = $name;
-        add_action('init', [$this, 'onInit']);
-    }
+//never render blocks from php:
+// class JSXBlock {
+//     function __construct($name) {
+//       $this->name = $name;
+//       add_action('init', [$this, 'onInit']);
+//     }
+  
+//     function onInit() {
+//       wp_register_script($this->name, get_stylesheet_directory_uri() . "/build/{$this->name}.js", array('wp-blocks', 'wp-editor'));
+//       register_block_type("ourblocktheme/{$this->name}", array(
+//         'editor_script' => $this->name
+//       ));
+//     }
+//   }
+  
+//   new JSXBlock('banner');
+//   new JSXBlock('genericheading');
+//   new JSXBlock('genericbutton');
 
+//render blocks from php if the second argument is true. the 3rd argument is for displaying a fallback image in the editor while no image is selected
+class JSXBlock {
+    function __construct($name, $renderCallback = null, $data = null) {
+      $this->name = $name;
+      $this->data = $data;
+      $this->renderCallback = $renderCallback;
+      add_action('init', [$this, 'onInit']);
+    }
+  
+    function ourRenderCallback($attributes, $content) {
+        // print_r($content);
+      ob_start();
+      require get_theme_file_path("/our-blocks/{$this->name}.php");
+      return ob_get_clean();
+    }
+  
     function onInit() {
-        wp_register_script($this->name, get_stylesheet_directory_uri(). "/build/{$this->name}.js", array('wp-blocks', 'wp-editor'));
-    register_block_type("ourblocktheme/{$this->name}", array(
+      wp_register_script($this->name, get_stylesheet_directory_uri() . "/build/{$this->name}.js", array('wp-blocks', 'wp-editor'));
+
+      if ($this->data) {
+        wp_localize_script($this->name, $this->name, $this->data);
+      } //injects the fallback image url into the source code
+      
+      $ourArgs = array(
         'editor_script' => $this->name
-    ));
+      );
+  
+      if ($this->renderCallback) {
+        $ourArgs['render_callback'] = [$this, 'ourRenderCallback'];
+      }
+  
+      register_block_type("ourblocktheme/{$this->name}", $ourArgs);
     }
   }
-
-  new JSXBlock('banner');
+  
+  new JSXBlock('banner', true, ['fallbackimage' => get_theme_file_uri('/images/library-hero.jpg')]);
   new JSXBlock('genericheading');
-
-
+  new JSXBlock('genericbutton');

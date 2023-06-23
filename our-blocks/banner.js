@@ -1,64 +1,113 @@
-//allow inner blocks:
-import { InnerBlocks } from '@wordpress/block-editor';
+import apiFetch from '@wordpress/api-fetch';
+import { Button, PanelBody, PanelRow } from '@wordpress/components';
+import {
+  InnerBlocks,
+  InspectorControls,
+  MediaUpload,
+  MediaUploadCheck,
+} from '@wordpress/block-editor';
+import { registerBlockType } from '@wordpress/blocks';
+import { useEffect, useState } from '@wordpress/element';
 
-wp.blocks.registerBlockType('ourblocktheme/banner', {
+registerBlockType('ourblocktheme/banner', {
   title: 'Banner',
   supports: {
     align: ['full'],
-  }, //in editor, will show this block in full width, even if in theme.json settings/layout/contentSize is limited to an fixed number of pixels
+  },
   attributes: {
     align: { type: 'string', default: 'full' },
+    imgID: { type: 'number' },
+    imgURL: { type: 'string', default: banner.fallbackimage },
   },
   edit: EditComponent,
   save: SaveComponent,
 });
 
-function EditComponent() {
-  const useMeLater = (
+function EditComponent(props) {
+  useEffect(() => {
+    if (props.attributes.imgID) {
+      async function go() {
+        const response = await apiFetch({
+          path: `/wp/v2/media/${props.attributes.imgID}`,
+          method: 'GET',
+        });
+        props.setAttributes({
+          imgURL: response.media_details.sizes.pageBanner.source_url,
+        });
+      }
+      go();
+    }
+  }, [props.attributes.imgID]);
+
+  function onFileSelect(x) {
+    props.setAttributes({ imgID: x.id });
+  }
+
+  return (
     <>
-      <h1 className='headline headline--large'>Welcome!</h1>
-      <h2 className='headline headline--medium'>
-        We think you&rsquo;ll like it here.
-      </h2>
-      <h3 className='headline headline--small'>
-        Why don&rsquo;t you check out the <strong>major</strong> you&rsquo;re
-        interested in?
-      </h3>
-      <a href='#' className='btn btn--large btn--blue'>
-        Find Your Major
-      </a>
+      {/* change BG image from the sidebar in editor */}
+      <InspectorControls>
+        <PanelBody title='Background' initialOpen={true}>
+          <PanelRow>
+            <MediaUploadCheck>
+              <MediaUpload
+                onSelect={onFileSelect}
+                value={props.attributes.imgID}
+                render={({ open }) => {
+                  return <Button onClick={open}>Choose Image</Button>;
+                }}
+              />
+            </MediaUploadCheck>
+          </PanelRow>
+        </PanelBody>
+      </InspectorControls>
+      <div className='page-banner'>
+        <div
+          className='page-banner__bg-image'
+          style={{
+            backgroundImage: `url('${
+              props.attributes.imgURL
+                ? props.attributes.imgURL
+                : '/images/library-hero.jpg'
+            }')`,
+          }}
+        ></div>
+        <div className='page-banner__content container t-center c-white'>
+          <InnerBlocks
+            allowedBlocks={[
+              'ourblocktheme/genericheading',
+              'ourblocktheme/genericbutton',
+            ]}
+          />
+        </div>
+      </div>
     </>
   );
-
-  return (
-    <div className='page-banner'>
-      <div
-        className='page-banner__bg-image'
-        style={{
-          backgroundImage:
-            'url(/wp-content/themes/uint-block-theme/images/library-hero.jpg)',
-        }}
-      ></div>
-      <div className='page-banner__content container t-center c-white'>
-        <InnerBlocks allowedBlocks={['ourblocktheme/genericheading']} />
-      </div>
-    </div>
-  );
 }
 
+//rendering directly from PHP (changes in the banner.php html will be directly rendered, on the fly, dynamically):
 function SaveComponent() {
-  return (
-    <div className='page-banner'>
-      <div
-        className='page-banner__bg-image'
-        style={{
-          backgroundImage:
-            'url(/wp-content/themes/uint-block-theme/images/library-hero.jpg)',
-        }}
-      ></div>
-      <div className='page-banner__content container t-center c-white'>
-        <InnerBlocks.Content />
-      </div>
-    </div>
-  );
+  return <InnerBlocks.Content />;
 }
+
+//rendering from js: this way, the html will be stored in the database, so when we want change the banner html, we will have to manually update each post/template in which we used this block. an alternative is to render from php (above)
+// function SaveComponent(props) {
+//   const imgURL_fallback =
+//     '/wp-content/themes/uint-block-theme/images/library-hero.jpg';
+
+//   return (
+//     <div className='page-banner'>
+//       <div
+//         className='page-banner__bg-image'
+//         style={{
+//           backgroundImage: `url('${
+//             props.attributes.imgURL ? props.attributes.imgURL : imgURL_fallback
+//           }')`,
+//         }}
+//       ></div>
+//       <div className='page-banner__content container t-center c-white'>
+//         <InnerBlocks.Content />
+//       </div>
+//     </div>
+//   );
+// }

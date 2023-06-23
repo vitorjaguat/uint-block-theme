@@ -12,7 +12,7 @@
   }
 
   &__title {
-    font-family: "Roboto Condensed", sans-serif;
+    font-family: 'Roboto Condensed', sans-serif;
     font-weight: 300;
     font-size: 3.6rem;
     margin: 0 0 1rem 0;
@@ -25,6 +25,7 @@
   &__bg-image {
     opacity: 0.33;
     background-size: cover;
+    background-position: center center;
     position: absolute;
     top: 0;
     bottom: 0;
