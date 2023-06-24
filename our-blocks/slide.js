@@ -9,8 +9,9 @@ import {
 import { registerBlockType } from '@wordpress/blocks';
 import { useEffect } from '@wordpress/element';
 
-registerBlockType('ourblocktheme/banner', {
-  title: 'Banner',
+registerBlockType('ourblocktheme/slide', {
+  title: 'Slide',
+  description: 'A slide to be inserted inside the Slideshow block',
   supports: {
     align: ['full'],
   },
@@ -18,12 +19,21 @@ registerBlockType('ourblocktheme/banner', {
     align: { type: 'string', default: 'full' },
     imgID: { type: 'number' },
     imgURL: { type: 'string', default: banner.fallbackimage },
+    themeimage: { type: 'string' },
   },
   edit: EditComponent,
   save: SaveComponent,
 });
 
 function EditComponent(props) {
+  useEffect(function () {
+    if (props.attributes.themeimage != '') {
+      props.setAttributes({
+        imgURL: `${slide.themeimagepath}${props.attributes.themeimage}`,
+      });
+    }
+  }, []); //provide theme inbuilt image if the user still didn't provide another image (see functions.php and above attributes)
+
   useEffect(() => {
     if (props.attributes.imgID) {
       async function go() {
@@ -61,26 +71,28 @@ function EditComponent(props) {
           </PanelRow>
         </PanelBody>
       </InspectorControls>
-      <div className='page-banner'>
-        <div
-          className='page-banner__bg-image'
-          style={{
-            backgroundImage: `url('${
-              props.attributes.imgURL
-                ? props.attributes.imgURL
-                : '/images/library-hero.jpg'
-            }')`,
-          }}
-        ></div>
-        <div className='page-banner__content container t-center c-white'>
-          <InnerBlocks
-            allowedBlocks={[
-              'ourblocktheme/genericheading',
-              'ourblocktheme/genericbutton',
-            ]}
-          />
+      <div className='hero-slider__slide'>
+        <div className='hero-slider__interior container'>
+          <div className='hero-slider__overlay t-center'>
+            <InnerBlocks
+              allowedBlocks={[
+                'ourblocktheme/genericheading',
+                'ourblocktheme/genericbutton',
+              ]}
+            />
+          </div>
         </div>
       </div>
+      <div
+        className='page-banner__bg-image'
+        style={{
+          backgroundImage: `url('${
+            props.attributes.imgURL
+              ? props.attributes.imgURL
+              : '/images/library-hero.jpg'
+          }')`,
+        }}
+      ></div>
     </>
   );
 }
@@ -89,25 +101,3 @@ function EditComponent(props) {
 function SaveComponent() {
   return <InnerBlocks.Content />;
 }
-
-//rendering from js: this way, the html will be stored in the database, so when we want change the banner html, we will have to manually update each post/template in which we used this block. an alternative is to render from php (above)
-// function SaveComponent(props) {
-//   const imgURL_fallback =
-//     '/wp-content/themes/uint-block-theme/images/library-hero.jpg';
-
-//   return (
-//     <div className='page-banner'>
-//       <div
-//         className='page-banner__bg-image'
-//         style={{
-//           backgroundImage: `url('${
-//             props.attributes.imgURL ? props.attributes.imgURL : imgURL_fallback
-//           }')`,
-//         }}
-//       ></div>
-//       <div className='page-banner__content container t-center c-white'>
-//         <InnerBlocks.Content />
-//       </div>
-//     </div>
-//   );
-// }

@@ -63,8 +63,8 @@ function university_files()
     wp_enqueue_script('main-university-js', get_theme_file_uri('build/index.js'), array('jquery'), '1.0', true); // adding the main js file; it takes 3 more arguments besides the file uri: dependecies, theme version, and a booloan which stands for if we want to load the file right after loading the head of the page.
     wp_enqueue_style('custom-google-fonts', '//fonts.googleapis.com/css?family=Roboto+Condensed:300,300i,400,400i,700,700i|Roboto:100,300,400,400i,700,700i'); // adding styles from google fonts CDN link (without the https: part)
     wp_enqueue_style('font-awesome', '//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'); // adding styles from fontawesome CDN link (without the https: part)
-    wp_enqueue_style('university_main_styles', get_theme_file_uri('/build/style-index.css')); // adding styles from /build/style-index.css
-    wp_enqueue_style('university_extra_styles', get_theme_file_uri('/build/index.css')); // adding styles from /build/style-index.css
+    wp_enqueue_style('university_main_styles', get_theme_file_uri('build/style-index.css')); // adding styles from /build/style-index.css
+    wp_enqueue_style('university_extra_styles', get_theme_file_uri('build/index.css')); // adding styles from /build/style-index.css
     
     wp_localize_script('main-university-js', 'universityData', array(
         'root_url' => get_site_url(), //the root url
@@ -237,6 +237,35 @@ add_filter('ai1wm_exclude_themes_from_export', function ($exclude_filters) {
 //   new JSXBlock('genericheading');
 //   new JSXBlock('genericbutton');
 
+//These blocks won't display as What You See Is What You Get in the ditor CMS; instead, they will render a simple placeholder; that is because they won't receive any inner customization like sizes, fonts or inner blocks:
+class PlaceholderBlock {
+    function __construct($name) {
+      $this->name = $name;
+      add_action('init', [$this, 'onInit']);
+    }
+  
+    function ourRenderCallback($attributes, $content) {
+      ob_start();
+      require get_theme_file_path("/our-blocks/{$this->name}.php");
+      return ob_get_clean();
+    }
+  
+    function onInit() {
+      wp_register_script($this->name, get_stylesheet_directory_uri() . "/our-blocks/{$this->name}.js", array('wp-blocks', 'wp-editor'));
+
+      $ourArgs = array(
+        'editor_script' => $this->name,
+        'render_callback' => [$this, 'ourRenderCallback']
+      );
+  
+      register_block_type("ourblocktheme/{$this->name}", $ourArgs);
+    }
+  }
+
+  new PlaceholderBlock('eventsandblogs');
+  new PlaceholderBlock('header');
+  new PlaceholderBlock('footer');
+
 //render blocks from php if the second argument is true. the 3rd argument is for displaying a fallback image in the editor while no image is selected
 class JSXBlock {
     function __construct($name, $renderCallback = null, $data = null) {
@@ -275,3 +304,8 @@ class JSXBlock {
   new JSXBlock('banner', true, ['fallbackimage' => get_theme_file_uri('/images/library-hero.jpg')]);
   new JSXBlock('genericheading');
   new JSXBlock('genericbutton');
+  new JSXBlock('slideshow', true);
+  new JSXBlock('slide', true, ['themeimagepath' => get_theme_file_uri('/images/')]); //providing a relative path to the images' URLs so that the theme works even if the user don't install it in the root theme folder; see index.html in /templates
+
+
+  
