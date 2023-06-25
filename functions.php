@@ -265,6 +265,13 @@ class PlaceholderBlock {
   new PlaceholderBlock('eventsandblogs');
   new PlaceholderBlock('header');
   new PlaceholderBlock('footer');
+  new PlaceholderBlock('singlepost');
+  new PlaceholderBlock('page');
+  new PlaceholderBlock('blogindex');
+  new PlaceholderBlock('programarchive');
+  new PlaceholderBlock('singleprogram');
+  new PlaceholderBlock('singleprofessor');
+  new PlaceholderBlock('mynotes');
 
 //render blocks from php if the second argument is true. the 3rd argument is for displaying a fallback image in the editor while no image is selected
 class JSXBlock {
