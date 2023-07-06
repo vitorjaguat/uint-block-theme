@@ -46,7 +46,23 @@ while (have_posts()) {
         <?php } ?>
 
         <div class="generic-content">
-            <?php the_content(); ?>
+            <?php the_content(); 
+            
+            // query vars implementation: (see functions.php right in the beginning; lecture 206)
+
+            $skyColorValue = sanitize_text_field(get_query_var('skyColor'));
+            $grassColorValue = sanitize_text_field(get_query_var('grassColor'));
+
+            if ($skyColorValue == 'blue' AND $grassColorValue == 'green') {
+                echo '<p>The sky is blue today. The grass is green. Life is good.</p>';
+            }
+            
+            ?>
+            <form method="GET">
+                <input name='skyColor' placeholder='Sky color'>
+                <input name='grassColor' placeholder='Grass color'>
+                <button>Submit</button>
+            </form>
         </div>
     </div>
 

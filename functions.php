@@ -1,5 +1,15 @@
 <?php
 
+// query vars: lecture 206 (see our-blocks/page.php for implementation)
+function universityQueryVars($vars) {
+    $vars[] = 'skyColor';
+    $vars[] = 'grassColor';
+    return $vars;
+}
+add_filter('query_vars', 'universityQueryVars');
+
+
+
 require get_theme_file_path('/inc/search-route.php');
 require get_theme_file_path('/inc/like-route.php');
 
@@ -272,6 +282,14 @@ class PlaceholderBlock {
   new PlaceholderBlock('singleprogram');
   new PlaceholderBlock('singleprofessor');
   new PlaceholderBlock('mynotes');
+  new PlaceholderBlock('campusarchive');
+  new PlaceholderBlock('eventarchive');
+  new PlaceholderBlock("archive");
+  new PlaceholderBlock('pastevents');
+  new PlaceholderBlock('searchresults');
+  new PlaceholderBlock('search');
+  new PlaceholderBlock("singlecampus");
+  new PlaceholderBlock("singleevent");
 
 //render blocks from php if the second argument is true. the 3rd argument is for displaying a fallback image in the editor while no image is selected
 class JSXBlock {
@@ -314,5 +332,23 @@ class JSXBlock {
   new JSXBlock('slideshow', true);
   new JSXBlock('slide', true, ['themeimagepath' => get_theme_file_uri('/images/')]); //providing a relative path to the images' URLs so that the theme works even if the user don't install it in the root theme folder; see index.html in /templates
 
+
+// //   restrict which blocks the user can add in the template editor (doesn't affect the block editor for any post type)
+// function myallowedblocks($allowed_block_types, $editor_context) {
+//     // if user is on a professor post editor, only allow these blocks to be used:
+//     if ($editor_context->post->post_type == 'professor') {
+//         return array('ourblocktheme/header', 'ourblocktheme/footer', 'core/list');
+//     }
+    
+//     // if user is on a page/post editor:
+//     if (!empty($editor_context->post)) {
+//         return $allowed_block_types;
+//     }
+//     // if user is on the Full Site Editor, only allow these blocks to be used:
+//     return array('core/paragraph', 'ourblocktheme/header', 'ourblocktheme/footer');
+
+// }
+
+// add_filter('allowed_block_types_all', 'myallowedblocks', 10, 2);
 
   
